@@ -38,7 +38,7 @@ export default class Footer extends Component {
   }
 
   render() {
-    const { onFilter, todoCount, todoClear } = this.props;
+    const { onFilter, todoCount, todoClearCompleted } = this.props;
     const { all, active, completed } = this.state;
     return (
       <footer className="footer">
@@ -48,7 +48,7 @@ export default class Footer extends Component {
           <TaskFilter status={active} desc="Active" onFilter={onFilter} onActive={this.onActive} />
           <TaskFilter status={completed} desc="Completed" onFilter={onFilter} onActive={this.onActive} />
         </ul>
-        <button type="button" className="clear-completed" onClick={todoClear}>
+        <button type="button" className="clear-completed" onClick={todoClearCompleted}>
           Clear completed
         </button>
       </footer>
@@ -58,11 +58,11 @@ export default class Footer extends Component {
 
 Footer.defaultProps = {
   todoCount: () => {},
-  todoClear: () => {},
+  todoClearCompleted: () => {},
 };
 
 Footer.propTypes = {
   todoCount: PropTypes.func,
-  todoClear: PropTypes.func,
+  todoClearCompleted: PropTypes.func,
   onFilter: PropTypes.func.isRequired,
 };

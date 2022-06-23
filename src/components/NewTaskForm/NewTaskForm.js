@@ -5,7 +5,7 @@ export default class NewTaskForm extends Component {
   constructor() {
     super();
     this.state = {
-      holder: 'What needs to be done?',
+      holder: 'Task',
     };
   }
 
@@ -15,25 +15,29 @@ export default class NewTaskForm extends Component {
     return (
       <header className="header">
         <h1>todos</h1>
-        <input
-          className="new-todo"
-          placeholder={holder}
-          onKeyDown={(e) => {
-            if (e.keyCode === 13) {
-              if (e.target.value !== '') {
-                this.setState({
-                  holder: 'What needs to be done?',
-                });
-                onAddItem(e.target.value);
-                e.target.value = '';
-              } else {
-                this.setState({
-                  holder: 'Please, write here youre Task',
-                });
+        <form className="new-todo-form">
+          <input
+            className="new-todo"
+            placeholder={holder}
+            onKeyDown={(e) => {
+              if (e.keyCode === 13) {
+                if (e.target.value !== '') {
+                  this.setState({
+                    holder: 'Task',
+                  });
+                  onAddItem(e.target.value);
+                  e.target.value = '';
+                } else {
+                  this.setState({
+                    holder: 'Write youre Task',
+                  });
+                }
               }
-            }
-          }}
-        />
+            }}
+          />
+          <input className="new-todo-form__timer" placeholder="Min" />
+          <input className="new-todo-form__timer" placeholder="Sec" />
+        </form>
       </header>
     );
   }

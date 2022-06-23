@@ -11,6 +11,46 @@ export default class Task extends Component {
       time: formatDistanceToNow(this.createTime, {
         includeSeconds: true,
       }),
+      minutes: JSON.parse(localStorage.getItem(`${props.id}min`)),
+      seconds: JSON.parse(localStorage.getItem(`${props.id}sec`)),
+      go: false,
+    };
+
+    setInterval(() => {
+      const { go } = this.state;
+      if (go) {
+        this.updateTimer();
+      }
+    }, 1000);
+
+    this.updateTimer = () => {
+      this.setState(({ seconds, minutes }) => {
+        const newSeconds = seconds + 1;
+        localStorage.setItem(`${props.id}sec`, JSON.stringify(newSeconds));
+        if (newSeconds % 60 === 0) {
+          const newMinutes = minutes + 1;
+          localStorage.setItem(`${props.id}min`, JSON.stringify(newMinutes));
+          return {
+            seconds: newSeconds,
+            minutes: newMinutes,
+          };
+        }
+        return {
+          seconds: newSeconds,
+        };
+      });
+    };
+
+    this.startTimer = () => {
+      this.setState({
+        go: true,
+      });
+    };
+
+    this.stopTimer = () => {
+      this.setState({
+        go: false,
+      });
     };
   }
 
@@ -32,8 +72,8 @@ export default class Task extends Component {
 
   render() {
     const { editing, desc, id, onDelete, onToggleCompleted, completed } = this.props;
-    const { time } = this.state;
-
+    const { time, minutes, seconds } = this.state;
+    const timer = new Date();
     let classNames = '';
     if (completed) classNames += 'completed';
     if (editing) classNames += 'editing';
@@ -48,9 +88,21 @@ export default class Task extends Component {
             defaultChecked={completed}
             onClick={onToggleCompleted}
           />
+
           <label htmlFor={`check${id}`}>
-            <span className="description">{desc}</span>
-            <span className="created">created {time} ago</span>
+            <span className="title">{desc}</span>
+            <span className="description">
+              <button type="button" className="icon icon-play" onClick={this.startTimer} />
+              <button type="button" className="icon icon-pause" onClick={this.stopTimer} />
+              {timer.getMinutes(timer.setMinutes(minutes)) < 10
+                ? `0${timer.getMinutes(timer.setMinutes(minutes))}`
+                : timer.getMinutes(timer.setMinutes(minutes))}
+              :
+              {timer.getSeconds(timer.setSeconds(seconds)) < 10
+                ? `0${timer.getSeconds(timer.setSeconds(seconds))}`
+                : timer.getSeconds(timer.setSeconds(seconds))}
+            </span>
+            <span className="description">created {time} ago</span>
           </label>
           <button type="button" className="icon icon-edit" />
           <button type="button" className="icon icon-destroy" onClick={onDelete} />

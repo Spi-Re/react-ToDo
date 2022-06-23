@@ -13,10 +13,16 @@ export default class App extends Component {
       todoData: [],
     };
 
+    this.deleteLocalStorage = (id) => {
+      localStorage.removeItem(`${id}min`);
+      localStorage.removeItem(`${id}sec`);
+    };
+
     this.onDelete = (id) => {
       this.setState(({ todoData }) => {
         const idx = todoData.findIndex((el) => el.id === id);
         const newArr = [...todoData.slice(0, idx), ...todoData.slice(idx + 1)];
+        this.deleteLocalStorage(id);
         return {
           todoData: newArr,
         };
@@ -77,9 +83,15 @@ export default class App extends Component {
       return length;
     };
 
-    this.todoClear = () => {
+    this.todoClearCompleted = () => {
       this.setState(({ todoData }) => {
-        const newData = todoData.filter((elem) => !elem.completed);
+        const newData = todoData.filter((elem) => {
+          if (elem.completed) {
+            this.deleteLocalStorage(elem.id);
+          }
+          return !elem.completed;
+        });
+
         return {
           todoData: newData,
         };
@@ -106,7 +118,7 @@ export default class App extends Component {
             onToggleCompleted={this.onToggleCompleted}
             filter={filter}
           />
-          <Footer todoClear={this.todoClear} todoCount={this.todoCount} onFilter={this.onFilter} />
+          <Footer todoClearCompleted={this.todoClearCompleted} todoCount={this.todoCount} onFilter={this.onFilter} />
         </section>
       </section>
     );
