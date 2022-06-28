@@ -1,126 +1,91 @@
-import { Component } from 'react';
+/* eslint-disable no-plusplus */
+import { useState, useEffect } from 'react';
 
 import NewTaskForm from '../NewTaskForm';
 import TaskList from '../TaskList';
 import Footer from '../Footer';
 
-export default class App extends Component {
-  constructor() {
-    super();
-    this.maxId = 100;
-    this.state = {
-      filter: 'All',
-      todoData: [],
+function App() {
+  let maxId = 100;
+  const [filter, setFilter] = useState('All');
+  const [todoData, setTodoData] = useState([]);
+
+  // почему-то не доавляется нормальный key для таски, он же не удаляется при удалении последней
+
+  const onDelete = (id) => {
+    setTodoData((arr) => {
+      const idx = arr.findIndex((el) => el.id === id);
+      const newArr = [...arr.slice(0, idx), ...arr.slice(idx + 1)];
+
+      return newArr;
+    });
+  };
+
+  const onAddItem = (desc) => {
+    maxId += 1;
+    const newItem = {
+      desc,
+      completed: false,
+      editing: false,
+      id: maxId,
+      time: new Date(Date.now()),
     };
+    // const newArr = [...todoData, newItem];
+    setTodoData([...todoData, newItem]);
+  };
 
-    this.deleteLocalStorage = (id) => {
-      localStorage.removeItem(`${id}min`);
-      localStorage.removeItem(`${id}sec`);
-    };
+  const onFilter = (desc) => {
+    if (desc === 'All') {
+      setFilter('All');
+    }
+    if (desc === 'Active') {
+      setFilter('Active');
+    }
+    if (desc === 'Completed') {
+      setFilter('Completed');
+    }
+  };
 
-    this.onDelete = (id) => {
-      this.setState(({ todoData }) => {
-        const idx = todoData.findIndex((el) => el.id === id);
-        const newArr = [...todoData.slice(0, idx), ...todoData.slice(idx + 1)];
-        this.deleteLocalStorage(id);
-        return {
-          todoData: newArr,
-        };
-      });
-    };
+  const onToggleCompleted = (id) => {
+    setTodoData((arr) => {
+      const idx = arr.findIndex((el) => el.id === id);
+      const oldItem = arr[idx];
+      const newItem = { ...oldItem, completed: !oldItem.completed };
 
-    this.onAddItem = (desc) => {
-      this.setState(({ todoData }) => {
-        this.maxId += 1;
-        const newItem = {
-          desc,
-          completed: false,
-          editing: false,
-          id: this.maxId,
-          time: new Date(Date.now()),
-        };
-        const newArr = [...todoData, newItem];
-        return {
-          todoData: newArr,
-        };
-      });
-    };
+      const newArr = [...arr.slice(0, idx), newItem, ...arr.slice(idx + 1)];
+      return newArr;
+    });
+  };
 
-    this.onFilter = (desc) => {
-      if (desc === 'All') {
-        this.setState(() => ({
-          filter: 'All',
-        }));
-      }
-      if (desc === 'Active') {
-        this.setState(() => ({
-          filter: 'Active',
-        }));
-      }
-      if (desc === 'Completed') {
-        this.setState({
-          filter: 'Completed',
-        });
-      }
-    };
+  const todoCount = () => {
+    const { length } = todoData.filter((el) => !el.completed);
+    return length;
+  };
 
-    this.onToggleCompleted = (id) => {
-      this.setState(({ todoData }) => {
-        const idx = todoData.findIndex((el) => el.id === id);
-        const oldItem = todoData[idx];
-        const newItem = { ...oldItem, completed: !oldItem.completed };
+  const todoClearCompleted = () => {
+    setTodoData(({ arr }) => {
+      const newData = arr.filter((elem) => !elem.completed);
 
-        const newArr = [...todoData.slice(0, idx), newItem, ...todoData.slice(idx + 1)];
-        return {
-          todoData: newArr,
-        };
-      });
-    };
+      return newData;
+    });
+  };
 
-    this.todoCount = () => {
-      const { todoData } = this.state;
-      const { length } = todoData.filter((el) => !el.completed);
-      return length;
-    };
+  useEffect(() => {
+    console.log('mount');
+    onAddItem('Completed task');
+    onAddItem('Editing Task');
+    onAddItem('Active Task');
+  }, []);
 
-    this.todoClearCompleted = () => {
-      this.setState(({ todoData }) => {
-        const newData = todoData.filter((elem) => {
-          if (elem.completed) {
-            this.deleteLocalStorage(elem.id);
-          }
-          return !elem.completed;
-        });
-
-        return {
-          todoData: newData,
-        };
-      });
-    };
-  }
-
-  componentDidMount() {
-    this.onAddItem('Completed task');
-    this.onAddItem('Editing Task');
-    this.onAddItem('Active Task');
-  }
-
-  render() {
-    const { todoData, filter } = this.state;
-
-    return (
-      <section className="todoapp">
-        <NewTaskForm onAddItem={this.onAddItem} />
-        <section className="main">
-          <TaskList
-            todoData={todoData}
-            onDelete={this.onDelete}
-            onToggleCompleted={this.onToggleCompleted}
-            filter={filter}
-          />
-          <Footer todoClearCompleted={this.todoClearCompleted} todoCount={this.todoCount} onFilter={this.onFilter} />
-        </section>
+  return (
+    <section className="todoapp">
+      <NewTaskForm onAddItem={onAddItem} />
+      <section className="main">
+        <TaskList todoData={todoData} onDelete={onDelete} onToggleCompleted={onToggleCompleted} filter={filter} />
+        <Footer todoClearCompleted={todoClearCompleted} todoCount={todoCount} onFilter={onFilter} />
       </section>
-    );
-  }
+    </section>
+  );
 }
+
+export default App;

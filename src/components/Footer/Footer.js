@@ -1,59 +1,52 @@
-import { Component } from 'react';
+import { useState } from 'react';
 import PropTypes from 'prop-types';
 
 import TaskFilter from '../TaskFilter';
 
-export default class Footer extends Component {
-  constructor() {
-    super();
-    this.state = {
-      all: 'selected',
-      active: '',
-      completed: '',
-    };
+function Footer({ onFilter, todoCount, todoClearCompleted }) {
+  const [chooseElement, setChooseElement] = useState({
+    all: 'selected',
+    active: '',
+    completed: '',
+  });
 
-    this.onActive = (desc) => {
-      if (desc === 'All') {
-        this.setState({
-          all: 'selected',
-          active: '',
-          completed: '',
-        });
-      }
-      if (desc === 'Active') {
-        this.setState({
-          all: '',
-          active: 'selected',
-          completed: '',
-        });
-      }
-      if (desc === 'Completed') {
-        this.setState({
-          all: '',
-          active: '',
-          completed: 'selected',
-        });
-      }
-    };
-  }
+  const onActive = (desc) => {
+    if (desc === 'All') {
+      setChooseElement({
+        all: 'selected',
+        active: '',
+        completed: '',
+      });
+    }
+    if (desc === 'Active') {
+      setChooseElement({
+        all: '',
+        active: 'selected',
+        completed: '',
+      });
+    }
+    if (desc === 'Completed') {
+      setChooseElement({
+        all: '',
+        active: '',
+        completed: 'selected',
+      });
+    }
+  };
 
-  render() {
-    const { onFilter, todoCount, todoClearCompleted } = this.props;
-    const { all, active, completed } = this.state;
-    return (
-      <footer className="footer">
-        <span className="todo-count">{todoCount()} items left</span>
-        <ul className="filters">
-          <TaskFilter status={all} desc="All" onFilter={onFilter} onActive={this.onActive} />
-          <TaskFilter status={active} desc="Active" onFilter={onFilter} onActive={this.onActive} />
-          <TaskFilter status={completed} desc="Completed" onFilter={onFilter} onActive={this.onActive} />
-        </ul>
-        <button type="button" className="clear-completed" onClick={todoClearCompleted}>
-          Clear completed
-        </button>
-      </footer>
-    );
-  }
+  return (
+    <footer className="footer">
+      <span className="todo-count">{todoCount()} items left</span>
+      <ul className="filters">
+        <TaskFilter status={chooseElement.all} desc="All" onFilter={onFilter} onActive={onActive} />
+        <TaskFilter status={chooseElement.active} desc="Active" onFilter={onFilter} onActive={onActive} />
+        <TaskFilter status={chooseElement.completed} desc="Completed" onFilter={onFilter} onActive={onActive} />
+      </ul>
+      <button type="button" className="clear-completed" onClick={todoClearCompleted}>
+        Clear completed
+      </button>
+    </footer>
+  );
 }
 
 Footer.defaultProps = {
@@ -66,3 +59,5 @@ Footer.propTypes = {
   todoClearCompleted: PropTypes.func,
   onFilter: PropTypes.func.isRequired,
 };
+
+export default Footer;
