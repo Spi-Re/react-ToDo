@@ -2,11 +2,8 @@
 import { formatDistanceToNow } from 'date-fns';
 import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { useStopwatch } from 'react-timer-hook';
 
 function Task({ id, desc, completed, editing, onDelete, onToggleCompleted, time }) {
-  const { seconds, minutes, start, pause } = useStopwatch({ autoStart: false });
-
   const createTime = time;
   const [convertCreateTime, setConvertCreateTime] = useState(
     formatDistanceToNow(createTime, {
@@ -14,7 +11,35 @@ function Task({ id, desc, completed, editing, onDelete, onToggleCompleted, time 
     })
   );
 
+  const [go, setGo] = useState(false);
+
+  const [localSeconds, setLocalSeconds] = useState(JSON.parse(localStorage.getItem(`sec${id}`)));
+
+  const updateTimer = () => {
+    let minutes = JSON.parse(localStorage.getItem(`min${id}`));
+    if (go) {
+      JSON.stringify(localStorage.setItem(`sec${id}`, localSeconds));
+      setLocalSeconds((sec) => sec + 1);
+
+      if (localSeconds === 59) {
+        setLocalSeconds((seconds) => seconds - 60);
+        minutes += 1;
+        JSON.stringify(localStorage.setItem(`min${id}`, minutes));
+        JSON.stringify(localStorage.setItem(`sec${id}`, localSeconds - 59));
+      }
+    }
+  };
+
+  const startTimer = () => {
+    setGo(true);
+  };
+
+  const stopTimer = () => {
+    setGo(false);
+  };
+
   const tick = () => {
+    updateTimer();
     setConvertCreateTime(
       formatDistanceToNow(createTime, {
         includeSeconds: true,
@@ -23,7 +48,6 @@ function Task({ id, desc, completed, editing, onDelete, onToggleCompleted, time 
   };
 
   useEffect(() => {
-    localStorage.setItem('secundomer2', seconds);
     const timer = setInterval(() => tick(), 1000);
     return () => {
       clearInterval(timer);
@@ -48,9 +72,15 @@ function Task({ id, desc, completed, editing, onDelete, onToggleCompleted, time 
         <label htmlFor={`check${id}`}>
           <span className="title">{desc}</span>
           <span className="description">
-            <button type="button" className="icon icon-play" onClick={() => start} />
-            <button type="button" className="icon icon-pause" onClick={pause} />
-            {minutes < 10 ? `0${minutes}` : minutes}:{seconds < 10 ? `0${seconds}` : seconds}
+            <button type="button" className="icon icon-play" onClick={startTimer} />
+            <button type="button" className="icon icon-pause" onClick={stopTimer} />
+            {JSON.parse(localStorage.getItem(`min${id}`)) < 10
+              ? `0${JSON.parse(localStorage.getItem(`min${id}`))}`
+              : JSON.parse(localStorage.getItem(`min${id}`))}
+            :
+            {JSON.parse(localStorage.getItem(`sec${id}`)) < 10
+              ? `0${JSON.parse(localStorage.getItem(`sec${id}`))}`
+              : JSON.parse(localStorage.getItem(`sec${id}`))}
           </span>
           <span className="description">created {convertCreateTime} ago</span>
         </label>

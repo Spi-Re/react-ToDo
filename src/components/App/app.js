@@ -1,37 +1,42 @@
-/* eslint-disable no-plusplus */
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 import NewTaskForm from '../NewTaskForm';
 import TaskList from '../TaskList';
 import Footer from '../Footer';
 
+let maxId = 100;
+
 function App() {
-  let maxId = 100;
   const [filter, setFilter] = useState('All');
   const [todoData, setTodoData] = useState([]);
 
-  // почему-то не доавляется нормальный key для таски, он же не удаляется при удалении последней
-
   const onDelete = (id) => {
-    setTodoData((arr) => {
-      const idx = arr.findIndex((el) => el.id === id);
-      const newArr = [...arr.slice(0, idx), ...arr.slice(idx + 1)];
+    localStorage.removeItem(`sec${id}`);
+    localStorage.removeItem(`min${id}`);
 
-      return newArr;
-    });
+    const idx = todoData.findIndex((el) => el.id === id);
+    const newArr = [...todoData.slice(0, idx), ...todoData.slice(idx + 1)];
+
+    setTodoData(newArr);
   };
 
   const onAddItem = (desc) => {
-    maxId += 1;
-    const newItem = {
-      desc,
-      completed: false,
-      editing: false,
-      id: maxId,
-      time: new Date(Date.now()),
-    };
-    // const newArr = [...todoData, newItem];
-    setTodoData([...todoData, newItem]);
+    setTodoData((arr) => {
+      maxId += 1;
+
+      localStorage.setItem(`sec${maxId}`, 55);
+      localStorage.setItem(`min${maxId}`, 0);
+      return [
+        {
+          desc,
+          completed: false,
+          editing: false,
+          id: maxId,
+          time: new Date(Date.now()),
+        },
+        ...arr,
+      ];
+    });
   };
 
   const onFilter = (desc) => {
@@ -47,14 +52,12 @@ function App() {
   };
 
   const onToggleCompleted = (id) => {
-    setTodoData((arr) => {
-      const idx = arr.findIndex((el) => el.id === id);
-      const oldItem = arr[idx];
-      const newItem = { ...oldItem, completed: !oldItem.completed };
+    const idx = todoData.findIndex((el) => el.id === id);
+    const oldItem = todoData[idx];
+    const newItem = { ...oldItem, completed: !oldItem.completed };
 
-      const newArr = [...arr.slice(0, idx), newItem, ...arr.slice(idx + 1)];
-      return newArr;
-    });
+    const newArr = [...todoData.slice(0, idx), newItem, ...todoData.slice(idx + 1)];
+    setTodoData(newArr);
   };
 
   const todoCount = () => {
@@ -63,16 +66,20 @@ function App() {
   };
 
   const todoClearCompleted = () => {
-    setTodoData(({ arr }) => {
-      const newData = arr.filter((elem) => !elem.completed);
-
-      return newData;
-    });
+    if (todoData.length) {
+      const newData = todoData.filter((elem) => {
+        if (elem.completed) {
+          localStorage.removeItem(`sec${elem.id}`);
+          localStorage.removeItem(`min${elem.id}`);
+        }
+        return !elem.completed;
+      });
+      setTodoData(newData);
+    }
   };
 
   useEffect(() => {
-    console.log('mount');
-    onAddItem('Completed task');
+    onAddItem('Completed Task');
     onAddItem('Editing Task');
     onAddItem('Active Task');
   }, []);
